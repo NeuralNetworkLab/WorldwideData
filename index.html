@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+	body {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	}
+
+	#canvas {}
+
+	#canvas-svg {
+		height: 100%;
+		width: 100%;
+		position: absolute;
+		display: flex;
+	}
+	
+
+	#right_part {
+		width: 17%;
+		border: 1px;
+		right: 0;
+		top:0;
+		position:relative;
+	}
+
+	.land {
+		fill: #222;
+	}
+
+	.boundary {
+		fill: none;
+		stroke: #fff;
+		stroke-width: 1px;
+	}
+	
+	.title{
+		text-align: center;	
+	}
+	
+	.svg_class
+	{
+		left: 0;
+		position:relative;
+	}
+	#tooltip-container {
+		position: absolute;
+		background-color: #fff;
+		color: #000;
+		padding: 10px;
+		border: 1px solid;
+		display: none;
+		top: 25%;
+	}
+
+	.tooltip_key {
+		font-weight: bold;
+	}
+
+	.tooltip_value {
+		margin-left: 20px;
+		float: right;
+	}
+	#title_svg{
+		position: absolute;
+		top:1%;
+		left:35%;
+	}
+	#title_time{
+		position: absolute;
+		top:4%;
+		left:35%;
+	}
+</style>
+<body>
+	<div id="canvas-svg">
+		<p id="title_svg">Arable land (% of land area)</p>
+		<p id="title_time">1990 [YR1990]</p>
+		<svg class="svg_class">
+			<div id="tooltip-container"></div>
+		</svg>
+		<div id="right_part">
+			<p class="title">热力图指标选择</p>
+			<form name="single" action="" method="" id="input_form">
+				<select id="features" name="features_dropdown" style="height:25px;font-size:10px;border-radius:10px">
+				</select>
+				<select id="times" name="times_dropdown" style="height:25px;font-size:10px;border-radius:10px">
+				</select>
+				<input type="checkbox" id="myCheckbox">自动随时间变化
+			</form>
+		</div>
+	</div>
+</body>
+<script src="D3/d3.min.js"></script>
+<!--version==5.0-->
+<script src="tool/topojson.min.js"></script>
+<!--version==1.1.0-->
+<script src="tool/jquery.min.js"></script>
+<!--version==2.1.3-->
+
+<script src="loaddata.js"></script>
+<script>
+	var features = [];
+	var years = [];
+	draw_input();
+	console.log(features);
+
+	//console.log(features);
+	//console.log(years);
+	var config = {
+		"data0": "Country Name",
+		"time": "1990 [YR1990]",
+		"feature": "0",
+		//"color0":"#FFFF99","color1":"#FF6600",
+		"color0": "#99ccff",
+		"color1": "#0050A1",
+		"width": 960,
+		"height": 960
+	}
+	var width = config.width,
+		height = config.height;
+
+	var COLOR_COUNTS = 10; //encode color number
+
+	//used for computer differenct step color
+	function Interpolate(start, end, steps, count) {
+		var s = start,
+			e = end,
+			final = s + (((e - s) / steps) * count);
+		return Math.floor(final);
+	}
+
+	function Color(_r, _g, _b) {
+		var r, g, b;
+		var setColors = function(_r, _g, _b) {
+			r = _r;
+			g = _g;
+			b = _b;
+		};
+
+		setColors(_r, _g, _b);
+		this.getColors = function() {
+			var colors = {
+				r: r,
+				g: g,
+				b: b
+			};
+			return colors;
+		};
+	}
+
+	function hexToRgb(hex) {
+		var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		return result ? {
+			r: parseInt(result[1], 16),
+			g: parseInt(result[2], 16),
+			b: parseInt(result[3], 16)
+		} : null;
+	}
+
+	function valueFormat(d) {
+		if (d > 1000000000) {
+			return Math.round(d / 1000000000 * 10) / 10 + "B";
+		} else if (d > 1000000) {
+			return Math.round(d / 1000000 * 10) / 10 + "M";
+		} else if (d > 1000) {
+			return Math.round(d / 1000 * 10) / 10 + "K";
+		} else {
+			return d;
+		}
+	}
+
+	var COLOR_FIRST = config.color0,
+		COLOR_LAST = config.color1;
+
+	var rgb = hexToRgb(COLOR_FIRST);
+
+	var COLOR_START = new Color(rgb.r, rgb.g, rgb.b);
+
+	rgb = hexToRgb(COLOR_LAST);
+	var COLOR_END = new Color(rgb.r, rgb.g, rgb.b);
+
+	var startColors = COLOR_START.getColors(),
+		endColors = COLOR_END.getColors();
+
+	var colors = []; // Save encoded colors
+
+	for (var i = 0; i < COLOR_COUNTS; i++) {
+		var r = Interpolate(startColors.r, endColors.r, COLOR_COUNTS, i);
+		var g = Interpolate(startColors.g, endColors.g, COLOR_COUNTS, i);
+		var b = Interpolate(startColors.b, endColors.b, COLOR_COUNTS, i);
+		colors.push(new Color(r, g, b));
+	}
+
+	var MAP_KEY = config.data0;
+	var MAP_VALUE = config.time;
+
+	var projection = d3.geoMercator() //world is projected to a square
+		.scale((width + 1) / 2 / Math.PI)
+		.translate([width / 2, height / 2]) // projection’s translation offset 
+		.precision(.1);
+
+	var path = d3.geoPath() // create a new geographic path generator
+		.projection(projection);
+
+	var graticule = d3.geoGraticule(); //Constructs a geometry generator for creating graticules
+
+
+	var svg = d3.select("#canvas-svg").select("svg")
+		.attr("width", width)
+		.attr("height", height)
+		.attr("position", "relative")
+
+	svg.append("path")
+		.datum(graticule) //bind graticule to "path"
+		.attr("class", "graticule")
+		.attr("d", path);
+
+	var valueHash = {};
+
+	function log10(val) {
+		return Math.log(val);
+	}
+	display_data();
+</script>
