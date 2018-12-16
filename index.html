@@ -12,11 +12,12 @@
 		width: 100%;
 		position: absolute;
 		display: flex;
+		text-align: center;
 	}
 	
 
 	#right_part {
-		width: 17%;
+		width: 25%;
 		border: 1px;
 		right: 0;
 		top:0;
@@ -70,6 +71,20 @@
 		top:4%;
 		left:35%;
 	}
+	#r_top_part{
+		position:relative;
+		border:1px
+		solid #009966;
+		height:25%;
+		width:100%;
+	}
+	.right_component{
+		position:relative;
+		border:1px     
+		solid #009966;          /*annotate this line when release*/
+		height:33%;
+		width:100%;
+	}
 </style>
 <body>
 	<div id="canvas-svg">
@@ -79,6 +94,7 @@
 			<div id="tooltip-container"></div>
 		</svg>
 		<div id="right_part">
+			<div id="r_top_part" class="right_component">
 			<p class="title">热力图指标选择</p>
 			<form name="single" action="" method="" id="input_form">
 				<select id="features" name="features_dropdown" style="height:25px;font-size:10px;border-radius:10px">
@@ -87,6 +103,11 @@
 				</select>
 				<input type="checkbox" id="myCheckbox">自动随时间变化
 			</form>
+			</div>
+			<div id="r_middle_part" class="right_component">
+			</div>
+			<div id="r_bottom_part" class="right_component">
+			</div>
 		</div>
 	</div>
 </body>
