@@ -18,3 +18,10 @@ for one_type in label_datas:
     i=i+1
 label_data.to_csv('data/data_definition.csv', index=False, header=True)
 
+country_data=raw_data.sort_values(['Country Name','Series Name'])
+coutries=country_data['Country Name'].unique()
+
+for country in coutries:
+    sub_df = country_data[country_data['Country Name'] == country]
+    sub_df.to_csv('data/countries/' + str(country) + '.csv', index=False, header=True)
+    i = i + 1
