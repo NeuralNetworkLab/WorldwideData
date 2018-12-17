@@ -3,10 +3,7 @@ function draw_input() {
 		data.forEach(function(d) { //save value to hash
 			features.push(d['Indicator Name']);
 		});
-		setTimeout(function(){
-		console.log(features);
-		},200);
-		
+
 		var select = d3.select('#features')
 			.on('change', onchange)
 		var options = select
@@ -21,7 +18,7 @@ function draw_input() {
 			});
 
 		function onchange() {
-			selectValue = d3.select('#features').property('value');  //get int type
+			selectValue = d3.select('#features').property('value'); //get int type
 			config.feature = selectValue;
 			display_data();
 		};
@@ -53,6 +50,7 @@ function draw_input() {
 	});
 	d3.select("#myCheckbox").on("change", update);
 	var refreshIntervalId;
+
 	function update() {
 		if (d3.select("#myCheckbox").property("checked")) {
 			var Index = 0;
@@ -73,7 +71,6 @@ function draw_input() {
 }
 
 function display_data() {
-
 	MAP_KEY = config.data0;
 	MAP_VALUE = config.time;
 	filname = "data/feature" + config.feature + ".csv";
@@ -142,14 +139,14 @@ function display_data() {
 						return "#ccc";
 					}
 				})
-				.on("mousemove", function(d) {              //display one attribute
+				.on("mousemove", function(d) { //display one attribute
 					var html = "";
-					
+
 					html += "<div class=\"tooltip_kv\">";
 					html += "<span class=\"tooltip_key\">";
-					html += features[config.feature];                   //country name
-					html +="  :<br>"; 
-					html += d.properties.name+"</span>";
+					html += features[config.feature]; //country name
+					html += "  :<br>";
+					html += d.properties.name + "</span>";
 					html += "<span class=\"tooltip_value\">";
 					html += (valueHash[d.properties.name] ? valueFormat(valueHash[d.properties.name]) : "");
 					html += "";
@@ -162,11 +159,11 @@ function display_data() {
 
 					var coordinates = d3.mouse(this);
 
-					var map_width=$('svg')[0].getBoundingClientRect().width;
+					var map_width = $('svg')[0].getBoundingClientRect().width;
 					if (d3.event.pageX < map_width / 2) {
-					d3.select("#tooltip-container")
-						.style("top", (d3.event.layerY + 15) + "px")   //d3.event = mouse move in
-						.style("left", (d3.event.layerX + 15) + "px");
+						d3.select("#tooltip-container")
+							.style("top", (d3.event.layerY + 15) + "px") //d3.event = mouse move in
+							.style("left", (d3.event.layerX + 15) + "px");
 					} else {
 						var tooltip_width = $("#tooltip-container").width();
 						d3.select("#tooltip-container")
@@ -178,10 +175,11 @@ function display_data() {
 					$(this).attr("fill-opacity", "1.0");
 					$("#tooltip-container").hide();
 				})
-				.on("click", function() {
-					alert("ok");
+				.on("click", function(d) {
+					displaybytime(d.properties.name);
+					displayattibutes(d.properties.name, config.time);
 				});
-					
+
 			g.append("path")
 				.datum(topojson.mesh(world, world.objects.countries, function(a, b) {
 					return a !== b;
@@ -194,4 +192,45 @@ function display_data() {
 
 		d3.select(self.frameElement).style("height", (height * 2.3 / 3) + "px");
 	});
+}
+
+function displayattibutes(country_name, year) {
+	d3.csv("data/countries/"+country_name + ".csv").then(function(data) {
+		attrHash={}
+		data.forEach(function(d) { //save value to hash
+			attrHash[d["Series Name"]]=+d[year];
+		});
+		console.log(data);	
+		binding=d3.select('#r_middle_part').select('table')
+		.selectAll('tr').data(data);
+		divs=binding.enter().append('tr');
+		divs.append('td').attr("class", "attr_key");
+		divs.append('td').attr("class", "attr_value");
+		binding.select('.attr_key')
+		.text(function(d,i) { //save value to hash
+			return d["Series Name"];
+		});
+		binding.select('.attr_value')
+		.text(function(d,i) { //save value to hash
+			return d[year];
+		});
+		binding.exit().remove();
+		
+	});
+}
+// 	var html = "";
+// 	html += "<div class=\"tooltip_kv\">";
+// 	html += "<span class=\"tooltip_key\">";
+// 	html += features[config.feature]; //country name
+// 	html += d.properties.name + "</span>";
+// 	html += "<span class=\"tooltip_value\">";
+// 	html += (valueHash[d.properties.name] ? valueFormat(valueHash[d.properties.name]) : "");
+// 	html += "";
+// 	html += "</span>";
+// 	html += "</div>";
+// 	$("#tr_middle_part").html(html);
+
+
+function displaybytime(country_name) {
+
 }

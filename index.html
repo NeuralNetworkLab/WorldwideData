@@ -61,6 +61,16 @@
 		margin-left: 20px;
 		float: right;
 	}
+	.attr_key{
+		font-weight: bold;
+		font-size: 1px;
+		float: left;
+	}
+	.attr_value{
+		font-size: 1px;
+		margin-left: 30px;
+		float: right;
+	}
 	#title_svg{
 		position: absolute;
 		top:1%;
@@ -73,16 +83,16 @@
 	}
 	#r_top_part{
 		position:relative;
-		border:1px
-		solid #009966;
+		/* border:1px */
+		/* solid #009966; */
 		height:25%;
 		width:100%;
 	}
 	.right_component{
 		position:relative;
-		border:1px     
-		solid #009966;          /*annotate this line when release*/
-		height:33%;
+		/* border:1px     */
+		/* solid #009966;          /*annotate this line when release*/ */
+		height:36.5%;
 		width:100%;
 	}
 </style>
@@ -105,6 +115,7 @@
 			</form>
 			</div>
 			<div id="r_middle_part" class="right_component">
+				<table></table>
 			</div>
 			<div id="r_bottom_part" class="right_component">
 			</div>
@@ -123,9 +134,8 @@
 	var features = [];
 	var years = [];
 	draw_input();
-	console.log(features);
 
-	//console.log(features);
+	console.log(features);
 	//console.log(years);
 	var config = {
 		"data0": "Country Name",
