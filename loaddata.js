@@ -228,7 +228,7 @@ function sortByAttr(country_name) {
 			if (list.length < 5) {
 				list.push(countryAttr);
 				list.sort(function(x, y) {
-					return x[1] - y[1];
+					return y[1] - x[1];
 				})
 			}
 			display_table();
@@ -238,10 +238,13 @@ function sortByAttr(country_name) {
 
 function display_table() {
 	//console.log(list.length);
-	if (list.length>0) {
+	if (list.length > 0) {
 		binding = d3.select('tbody')
 			.selectAll('tr').data(list);
+		console.log(list);
 		divs = binding.enter().append('tr');
+		binding = d3.select('tbody')
+			.selectAll('tr').data(list);
 		divs.append('td').attr("class", "attr_key");
 		divs.append('td').attr("class", "attr_value");
 		binding.select('.attr_key')
@@ -253,6 +256,7 @@ function display_table() {
 			.text(function(d, i) { //save value to hash
 				return d[1];
 			});
+		binding.exit().remove();
 	} else {
 		console.log('1');
 		d3.select('tbody').remove();
