@@ -181,7 +181,6 @@ function display_data() {
 					//displaybytime(d.properties.name);
 					//displayattibutes(d.properties.name, config.time);
 					sortByAttr(d.properties.name);
-
 					get_radar_data(d.properties.name, config.time);
 					display_radar();
 				});
@@ -194,9 +193,26 @@ function display_data() {
 				.attr("d", path);
 
 			svg.attr("height", config.height * 2.2 / 3);
+			d3.select(self.frameElement).style("height", (height * 2.3 / 3) + "px");
+			const zoom = d3.zoom()
+				.scaleExtent([0.3, 40])
+				.translateExtent([
+					[0, 0],
+					[width, height]
+				])
+				.extent([
+					[0, 0],
+					[width, height]
+				])
+				.on("zoom", zoomed);
+			svg.call(zoom);
+
+			function zoomed() {
+				g.attr("transform", d3.event.transform);
+			}
 		});
 
-		d3.select(self.frameElement).style("height", (height * 2.3 / 3) + "px");
+
 	});
 }
 
@@ -243,8 +259,10 @@ function display_table() {
 			.selectAll('tr').data(list);
 		console.log(list);
 		divs = binding.enter().append('tr');
+
 		binding = d3.select('tbody')
 			.selectAll('tr').data(list);
+
 		divs.append('td').attr("class", "attr_key");
 		divs.append('td').attr("class", "attr_value");
 		binding.select('.attr_key')
