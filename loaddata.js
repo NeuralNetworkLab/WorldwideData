@@ -184,6 +184,7 @@ function display_data() {
 
 					get_radar_data(d.properties.name, config.time);
 					display_radar();
+					
 				});
 
 			g.append("path")
@@ -228,7 +229,7 @@ function sortByAttr(country_name) {
 			if (list.length < 5) {
 				list.push(countryAttr);
 				list.sort(function(x, y) {
-					return x[1] - y[1];
+					return y[1] - x[1];
 				})
 			}
 			display_table();
@@ -241,16 +242,19 @@ function display_table() {
 	if (list.length>0) {
 		binding = d3.select('tbody')
 			.selectAll('tr').data(list);
+		console.log(binding);
 		divs = binding.enter().append('tr');
 		divs.append('td').attr("class", "attr_key");
 		divs.append('td').attr("class", "attr_value");
+		binding = d3.select('tbody')
+			.selectAll('tr').data(list);
 		binding.select('.attr_key')
 			.text(function(d, i) { //save value to hash
 				console.log('0');
 				return d[0];
 			});
 		binding.select('.attr_value')
-			.text(function(d, i) { //save value to hash
+			.text(function(d, i) {//save value to hash
 				return d[1];
 			});
 	} else {
@@ -258,7 +262,6 @@ function display_table() {
 		d3.select('tbody').remove();
 		d3.select('table').append('tbody');
 	}
-	console.log('2');
 }
 
 function resetBtn() {
@@ -313,25 +316,28 @@ function get_radar_data(country_name, d_year) {
 	var attrs = [];
 	var temp;
 	var dataset = {};
+	console.log(dmax.length);
+	console.log(dmin.length);
 	filename = "data/countries/" + country_name + ".csv";
 	d3.csv(filename).then(function(data) {
+		console.log(data);
 		for (var i = 0; i < data.length; i++) {
 			if (data[i][d_year] == '..') {
-				temp = 0;
+				temp = 0.0;
 			} else {
-				temp = parseInt(data[i][d_year])
+				temp = parseFloat(data[i][d_year])
 			}
+			temp = (temp-dmin[i])/(dmax[i]-dmin[i])
 			attrs.push(temp);
 		}
+		dataset.value = attrs;
+		dataset.name = country_name;
+		radar_data.push(dataset);
 	});
-	dataset.value = attrs;
-	dataset.name = country_name;
-	radar_data.push(dataset);
-
-	console.log(radar_data);
 }
 //显示雷达图数据
 function display_radar() {
+	console.log(radar_data);
 	var dom = document.getElementById("r_bottom_part");
 	var myChart = echarts.init(dom);
 	var app = {};
@@ -352,71 +358,71 @@ function display_radar() {
 			},
 			indicator: [{
 					name: 'Arable land (% of land area)',
-					max: 50
+					max: 1
 				},
 				{
 					name: 'Armed forces personnel (% of total labor force)',
-					max: 10
+					max: 1
 				},
 				{
 					name: 'GDP (current US$)',
-					max: 16800000000000
+					max: 1
 				},
 				{
 					name: 'GDP growth (annual %)',
-					max: 15
+					max: 1
 				},
 				{
 					name: 'GDP per capita (current US$)',
-					max: 10000
+					max: 1
 				},
 				{
 					name: 'GDP per capita growth (annual %)',
-					max: 10
+					max: 1
 				},
 				{
 					name: 'Internet users (per 100 people)',
-					max: 2
+					max: 1
 				},
 				{
 					name: 'Labor force, female (% of total labor force)',
-					max: 50
+					max: 1
 				},
 				{
 					name: 'Labor force, total',
-					max: 13455537
+					max: 1
 				},
 				{
 					name: 'Population density (people per sq. km of land area)',
-					max: 1000
+					max: 1
 				},
 				{
 					name: 'Population growth (annual %)',
-					max: 5
+					max: 1
 				},
 				{
 					name: 'Population, female (% of total)',
-					max: 100
+					max: 1
 				},
 				{
 					name: 'Population, total',
-					max: 10239000
+					max: 1
 				},
 				{
 					name: 'Rural population',
-					max: 12415909
+					max: 1
 				},
 				{
 					name: 'Surface area (sq. km)',
-					max: 7741220
+					max: 1
 				},
 				{
 					name: 'Unemployment, female (% of female labor force) (modeled ILO estimate)',
-					max: 50
+					max: 1
 				},
 				{
 					name: 'Unemployment, total (% of total labor force) (modeled ILO estimate)',
-					max: 30
+					max: 1
 				}
 			]
 		},
