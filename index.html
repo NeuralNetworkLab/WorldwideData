@@ -62,14 +62,14 @@
 		float: right;
 	}
 	.attr_key{
-		font-weight: bold;
+/* 		font-weight: bold;
 		font-size: 1px;
-		float: left;
+		float: left; */
 	}
 	.attr_value{
-		font-size: 1px;
+/* 		font-size: 1px;
 		margin-left: 30px;
-		float: right;
+		float: right; */
 	}
 	#title_svg{
 		position: absolute;
@@ -101,27 +101,52 @@
 		<p id="title_svg">Arable land (% of land area)</p>
 		<p id="title_time">1990 [YR1990]</p>
 		<svg class="svg_class">
+			<!-- 世界地图画布 -->
 			<div id="tooltip-container"></div>
 		</svg>
 		<div id="right_part">
 			<div id="r_top_part" class="right_component">
-			<p class="title">热力图指标选择</p>
-			<form name="single" action="" method="" id="input_form">
-				<select id="features" name="features_dropdown" style="height:25px;font-size:10px;border-radius:10px">
-				</select>
-				<select id="times" name="times_dropdown" style="height:25px;font-size:10px;border-radius:10px">
-				</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<input type="checkbox" id="myCheckbox">自动随时间变化
-			</form>
+				<p class="title">热力图指标选择</p>
+				<form name="single" action="" method="" id="input_form">
+					<select id="features" name="features_dropdown" style="height:25px;font-size:10px;border-radius:10px">
+					</select> <!-- attributes' selection -->
+					<select id="times" name="times_dropdown" style="height:25px;font-size:10px;border-radius:10px">
+						<!-- time's selection -->
+					</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="checkbox" id="myCheckbox">自动随时间变化
+				</form>
 			</div>
 			<div id="r_middle_part" class="right_component">
-				<table></table>
+				<p>国家排序表</p>
+				<table cellpadding="0" cellspacing="0" width="410" border="1px solid black">
+					<thead>
+						<tr style="background-color: gray;">
+							<th>Country Name</th>
+							<th id="attribute_name">Attribute</th>
+						</tr>
+					</thead>
+					<tbody>
+
+					</tbody>
+				</table>
+				<br />
+				<input type="button" id="resetBtn" value="reset" onclick="resetBtn()" />
 			</div>
-			<div id="r_bottom_part" class="right_component">
+			<div id="r_bottom_part" class="right_component" style="height: 100%;width: 100%;">
 			</div>
 		</div>
 	</div>
 </body>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echarts-gl.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
+<!-- <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script> -->
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
+<!-- eCharts -->
 <script src="D3/d3.min.js"></script>
 <!--version==5.0-->
 <script src="tool/topojson.min.js"></script>
@@ -133,8 +158,10 @@
 <script>
 	var features = [];
 	var years = [];
+	var list = []; //列表数据
+	var radar_data = [];//雷达图数据
 	draw_input();
-
+	console.log(list);
 	console.log(features);
 	//console.log(years);
 	var config = {

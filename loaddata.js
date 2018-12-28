@@ -1,7 +1,7 @@
 function draw_input() {
 	d3.csv("data/data_definition.csv").then(function(data) {
 		data.forEach(function(d) { //save value to hash
-			features.push(d['Indicator Name']);
+			features.push(d['Indicator Name']); //push attribute's name into features(Array)
 		});
 
 		var select = d3.select('#features')
@@ -76,6 +76,8 @@ function display_data() {
 	filname = "data/feature" + config.feature + ".csv";
 	d3.csv(filname).then(function(data) {
 		d3.select('#title_svg').text(features[config.feature]);
+		d3.select('#attribute_name').text(features[config.feature]);
+		display_radar();
 		d3.select('#title_time').text(config.time);
 		data.forEach(function(d) { //save value to hash
 			valueHash[d[MAP_KEY]] = +d[MAP_VALUE];
@@ -176,8 +178,12 @@ function display_data() {
 					$("#tooltip-container").hide();
 				})
 				.on("click", function(d) {
-					displaybytime(d.properties.name);
-					displayattibutes(d.properties.name, config.time);
+					//displaybytime(d.properties.name);
+					//displayattibutes(d.properties.name, config.time);
+					sortByAttr(d.properties.name);
+					
+					get_radar_data(d.properties.name, config.time);
+					display_radar();
 				});
 
 			g.append("path")
@@ -194,28 +200,84 @@ function display_data() {
 	});
 }
 
-function displayattibutes(country_name, year) {
-	d3.csv("data/countries/"+country_name + ".csv").then(function(data) {
-		attrHash={}
-		data.forEach(function(d) { //save value to hash
-			attrHash[d["Series Name"]]=+d[year];
+function sortByAttr(country_name) {
+	var countryAttr = [];
+	var count = 0;
+	if (list.length != 0) {
+		for (var i = 0; i < list.length; i++) {
+			if (list[i].indexOf(country_name) == -1) {
+				count = count + 1;
+			}
+		}
+	}
+	if (count == list.length) {
+		countryAttr.push(country_name);
+		var filname = "data/feature" + config.feature + ".csv";
+		d3.csv(filname).then(function(data) {
+			for (var i = 0; i < data.length; i++) {
+				if (data[i]["Country Name"] == country_name) {
+					countryAttr.push(data[i][config.time]);
+				}
+			}
+			if (list.length < 5) {
+				list.push(countryAttr);
+			}
+			display_table();
+
 		});
-		console.log(data);	
-		binding=d3.select('#r_middle_part').select('table')
-		.selectAll('tr').data(data);
-		divs=binding.enter().append('tr');
+		
+	}
+}
+
+function display_table() {
+	console.log(list);
+	if (list.length < 5 && list.length > 0) {
+		binding = d3.select('tbody')
+			.selectAll('tr').data(list);
+		divs = binding.enter().append('tr');
 		divs.append('td').attr("class", "attr_key");
 		divs.append('td').attr("class", "attr_value");
 		binding.select('.attr_key')
-		.text(function(d,i) { //save value to hash
-			return d["Series Name"];
-		});
+			.text(function(d, i) { //save value to hash
+				return d[0];
+			});
 		binding.select('.attr_value')
-		.text(function(d,i) { //save value to hash
-			return d[year];
+			.text(function(d, i) { //save value to hash
+				return d[1];
+			});
+	} else {
+		d3.select('tbody').remove();
+		d3.select('table').append('tbody');
+	}
+}
+
+function resetBtn() {
+	list = [];
+	display_table();
+}
+
+function displayattibutes(country_name, year) {
+	d3.csv("data/countries/" + country_name + ".csv").then(function(data) {
+		attrHash = {}
+		data.forEach(function(d) { //save value to hash
+			attrHash[d["Series Name"]] = +d[year];
 		});
+		//console.log(data);
+		binding = d3.select('#r_middle_part').select('table')
+			.selectAll('tr').data(data);
+		divs = binding.enter().append('tr');
+		divs.append('td').attr("class", "attr_key");
+		divs.append('td').attr("class", "attr_value");
+		binding.select('.attr_key')
+			.text(function(d, i) { //save value to hash
+				return d["Series Name"];
+			});
+		binding.select('.attr_value')
+			.text(function(d, i) { //save value to hash
+				return d[year];
+			});
 		binding.exit().remove();
-		
+
 	});
 }
 // 	var html = "";
@@ -233,4 +295,156 @@ function displayattibutes(country_name, year) {
 
 function displaybytime(country_name) {
 
+}
+//获取雷达图数据
+function get_radar_data(country_name, d_year) {
+	var attrs = [];
+	var temp;
+	var dataset = {};
+	filename = "data/countries/" + country_name + ".csv";
+	d3.csv(filename).then(function(data) {
+		for (var i = 0; i < data.length; i++) {
+			if (data[i][d_year] == '..') {
+				temp = 0;
+			} else {
+				temp = parseInt(data[i][d_year])
+			}
+			attrs.push(temp);
+		}
+	});
+	dataset.value = attrs;
+	dataset.name = country_name;
+	radar_data.push(dataset);
+
+	console.log(radar_data);
+}
+//显示雷达图数据
+function display_radar() {
+	var dom = document.getElementById("r_bottom_part");
+	var myChart = echarts.init(dom);
+	var app = {};
+
+	var option = null;
+	option = {
+		tooltip: {},
+		legend: {},
+		radar: {
+			// shape: 'circle',
+			name: {
+				textStyle: {
+					color: '#fff',
+					backgroundColor: '#999',
+					borderRadius: 3,
+					padding: [3, 5]
+				}
+			},
+			indicator: [{
+					name: 'Arable land (% of land area)',
+					max: 50
+				},
+				{
+					name: 'Armed forces personnel (% of total labor force)',
+					max: 10
+				},
+				{
+					name: 'GDP (current US$)',
+					max: 16800000000000
+				},
+				{
+					name: 'GDP growth (annual %)',
+					max: 15
+				},
+				{
+					name: 'GDP per capita (current US$)',
+					max: 10000
+				},
+				{
+					name: 'GDP per capita growth (annual %)',
+					max: 10
+				},
+				{
+					name: 'Internet users (per 100 people)',
+					max: 2
+				},
+				{
+					name: 'Labor force, female (% of total labor force)',
+					max: 50
+				},
+				{
+					name: 'Labor force, total',
+					max: 13455537
+				},
+				{
+					name: 'Population density (people per sq. km of land area)',
+					max: 1000
+				},
+				{
+					name: 'Population growth (annual %)',
+					max: 5
+				},
+				{
+					name: 'Population, female (% of total)',
+					max: 100
+				},
+				{
+					name: 'Population, total',
+					max: 10239000
+				},
+				{
+					name: 'Rural population',
+					max: 12415909
+				},
+				{
+					name: 'Surface area (sq. km)',
+					max: 7741220
+				},
+				{
+					name: 'Unemployment, female (% of female labor force) (modeled ILO estimate)',
+					max: 50
+				},
+				{
+					name: 'Unemployment, total (% of total labor force) (modeled ILO estimate)',
+					max: 30
+				}
+			]
+		},
+		series: [{
+			name: 'data comparison',
+			type: 'radar',
+			// areaStyle: {normal: {}},
+			data: [{
+					value: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+					name: 'A'
+				},
+				{
+					value: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+					name: 'B'
+				},
+				{
+					value: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+					name: 'C'
+				},
+				{
+					value: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+					name: 'D'
+				},
+				{
+					value: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+					name: 'E'
+				}
+			]
+		}]
+	};
+	//console.log(radar_data_list);
+	//console.log(option.series[0].data);
+	//radar_data.value = [-10,200,30.7,400,500,600,-7000000000,10,20,30,40,50,60,70,10,20,30];
+	for (var i = 0; i < 5; i++) {
+		option.series[0].data[i] = radar_data[i];
+	}
+	//console.log(radar_data.value);
+	//console.log(radar_data);
+	//console.log(option.series[0].data)
+	if (option && typeof option === "object") {
+		myChart.setOption(option, true);
+	}
 }
