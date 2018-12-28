@@ -181,7 +181,7 @@ function display_data() {
 					//displaybytime(d.properties.name);
 					//displayattibutes(d.properties.name, config.time);
 					sortByAttr(d.properties.name);
-					
+
 					get_radar_data(d.properties.name, config.time);
 					display_radar();
 				});
@@ -211,27 +211,34 @@ function sortByAttr(country_name) {
 		}
 	}
 	if (count == list.length) {
+		var temp;
 		countryAttr.push(country_name);
 		var filname = "data/feature" + config.feature + ".csv";
 		d3.csv(filname).then(function(data) {
 			for (var i = 0; i < data.length; i++) {
 				if (data[i]["Country Name"] == country_name) {
-					countryAttr.push(data[i][config.time]);
+					if (data[i][config.time] == '..') {
+						temp = 0;
+					} else {
+						temp = parseFloat(data[i][config.time]);
+					}
+					countryAttr.push(temp);
 				}
 			}
 			if (list.length < 5) {
 				list.push(countryAttr);
+				list.sort(function(x, y) {
+					return x[1] - y[1];
+				})
 			}
 			display_table();
-
 		});
-		
 	}
 }
 
 function display_table() {
-	console.log(list);
-	if (list.length < 5 && list.length > 0) {
+	//console.log(list.length);
+	if (list.length>0) {
 		binding = d3.select('tbody')
 			.selectAll('tr').data(list);
 		divs = binding.enter().append('tr');
@@ -239,6 +246,7 @@ function display_table() {
 		divs.append('td').attr("class", "attr_value");
 		binding.select('.attr_key')
 			.text(function(d, i) { //save value to hash
+				console.log('0');
 				return d[0];
 			});
 		binding.select('.attr_value')
@@ -246,14 +254,18 @@ function display_table() {
 				return d[1];
 			});
 	} else {
+		console.log('1');
 		d3.select('tbody').remove();
 		d3.select('table').append('tbody');
 	}
+	console.log('2');
 }
 
 function resetBtn() {
 	list = [];
+	radar_data = [];
 	display_table();
+	display_radar()
 }
 
 function displayattibutes(country_name, year) {
