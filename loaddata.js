@@ -258,11 +258,6 @@ function display_table() {
 	if (list.length > 0) {
 		binding = d3.select('tbody')
 			.selectAll('tr').data(list);
-<<<<<<< HEAD
-		console.log(binding);
-=======
-		console.log(list);
->>>>>>> 7f9ded9440754753a9bce074d09d6af9fc98d96c
 		divs = binding.enter().append('tr');
 
 		binding = d3.select('tbody')
@@ -353,6 +348,7 @@ function get_radar_data(country_name, d_year) {
 				temp = parseFloat(data[i][d_year])
 			}
 			temp = (temp-dmin[i])/(dmax[i]-dmin[i])
+			console.log(temp);
 			attrs.push(temp);
 		}
 		dataset.value = attrs;
