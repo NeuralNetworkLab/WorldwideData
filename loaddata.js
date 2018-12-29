@@ -182,7 +182,7 @@ function display_data() {
 					//displayattibutes(d.properties.name, config.time);
 					sortByAttr(d.properties.name);
 					get_radar_data(d.properties.name, config.time);
-					display_radar();
+					//display_radar();
 					
 				});
 
@@ -269,7 +269,6 @@ function display_table() {
 			.selectAll('tr').data(list);
 		binding.select('.attr_key')
 			.text(function(d, i) { //save value to hash
-				console.log('0');
 				return d[0];
 			});
 		binding.select('.attr_value')
@@ -278,7 +277,6 @@ function display_table() {
 			});
 		binding.exit().remove();
 	} else {
-		console.log('1');
 		d3.select('tbody').remove();
 		d3.select('table').append('tbody');
 	}
@@ -336,11 +334,8 @@ function get_radar_data(country_name, d_year) {
 	var attrs = [];
 	var temp;
 	var dataset = {};
-	console.log(dmax.length);
-	console.log(dmin.length);
 	filename = "data/countries/" + country_name + ".csv";
 	d3.csv(filename).then(function(data) {
-		console.log(data);
 		for (var i = 0; i < data.length; i++) {
 			if (data[i][d_year] == '..') {
 				temp = 0.0;
@@ -348,12 +343,12 @@ function get_radar_data(country_name, d_year) {
 				temp = parseFloat(data[i][d_year])
 			}
 			temp = (temp-dmin[i])/(dmax[i]-dmin[i])
-			console.log(temp);
 			attrs.push(temp);
 		}
 		dataset.value = attrs;
 		dataset.name = country_name;
 		radar_data.push(dataset);
+		display_radar();
 	});
 }
 //显示雷达图数据
@@ -477,9 +472,13 @@ function display_radar() {
 	//console.log(radar_data_list);
 	//console.log(option.series[0].data);
 	//radar_data.value = [-10,200,30.7,400,500,600,-7000000000,10,20,30,40,50,60,70,10,20,30];
-	for (var i = 0; i < 5; i++) {
-		option.series[0].data[i] = radar_data[i];
+	if(radar_data.length!=0){
+		for (var i = 0; i < 5; i++) {
+			console.log(radar_data[i]);
+			option.series[0].data[i] = radar_data[i];
+		}
 	}
+	
 	//console.log(radar_data.value);
 	//console.log(radar_data);
 	//console.log(option.series[0].data)
